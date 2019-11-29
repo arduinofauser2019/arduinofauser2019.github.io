@@ -1,0 +1,113 @@
+<!-- Laboratorio LI -->
+<!DOCTYPE html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+        <meta http-equiv="Pragma" content="no-cache"/>
+        <meta http-equiv="Expires" content="0"/>
+        <title>Laboratorio LI - Progetto in Arduino - ITT G. Fauser - OpenDay 16 novembre 2019</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <style type="text/css">
+            .table {
+                width: auto !important;
+            }
+            
+            table.tabella th {
+                background-color: #5289D6;
+                color: white;
+            }
+        </style>
+        <script type="text/javascript">
+            setTimeout(function () {
+                location.reload();
+            }, 10000);
+
+            function avviaAggiornamento() {
+                document.getElementById("sottotitolo").innerHTML = "Aggiornamento in corso...";
+                const URL = "misureLI.txt";
+                var filehttp = new XMLHttpRequest();
+                filehttp.open("GET", URL, true);
+                filehttp.send();
+                filehttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        Main(tornaArrayMisure(filehttp.responseText));
+                        document.getElementById("sottotitolo").innerHTML = "";
+                    }
+                };
+            }
+
+            function tornaArrayMisure(mis) {
+                return mis.split('\n');
+            }
+
+            function tornaSingolaRiga(mis, pos) {
+                return mis[pos].split(';');
+            }
+
+            function tornaUltimaMisura(arrayMis, maxCiclo) {
+                return tornaSingolaRiga(arrayMis, maxCiclo - 1);
+            }
+
+            function Main(arrayMisure) {
+                var tabellaStr = "";
+                var ultimaMisura;
+                tabellaStr += '<table class="table table-bordered table-sm shadow tabella">';
+                tabellaStr += '<thead><tr><th></th><th scope="col">&nbsp;&nbsp;Umidit&agrave;&nbsp;&nbsp;</th><th scope="col">&nbsp;&nbsp;Temperatura&nbsp;&nbsp;</th><th scope="col">&nbsp;&nbsp;Indice di calore&nbsp;&nbsp;</th></tr></thead><tbody>';
+                for (var i = arrayMisure.length - 2; i >= 0; i--) {
+                    var riga = tornaSingolaRiga(arrayMisure, i);
+                    tabellaStr += '<tr class="text-center">';
+                    tabellaStr += "<th>&nbsp;" + (arrayMisure.length - 2 - i + 1) + "&nbsp;</th>";
+                    tabellaStr += "<td>" + riga[0] + "&nbsp;&percnt;</td>";
+                    tabellaStr += "<td>" + riga[1] + "&nbsp;&deg;C</td>";
+                    tabellaStr += "<td>" + riga[2] + "&nbsp;&deg;C</td>";
+                    tabellaStr += "</tr>";
+                }
+                tabellaStr += "</tbody></table>";
+                document.getElementById("tabella").innerHTML = tabellaStr;
+                ultimaMisura = tornaUltimaMisura(arrayMisure, arrayMisure.length - 1);
+                ultimaMisura = parseInt(ultimaMisura.slice(0, 1));
+                if (ultimaMisura >= 40 && ultimaMisura <= 65) {
+                    document.getElementById("immagine").innerHTML = '<img src="good1.jpg" height="400" width="400">';
+                    document.getElementById("condizione").innerHTML = '<p> Umidit&#224; ideale! </p>';
+                    document.getElementById("condizione").style.color = "#339966";
+                } else if (ultimaMisura > 65 && ultimaMisura <= 70) {
+                    document.getElementById("immagine").innerHTML = '<img src="good2.png" height="400" width="400">';
+                    document.getElementById("condizione").innerHTML = '<p> L&#8217;umidit&#224; si sta alzando! </p>';
+                    document.getElementById("condizione").style.color = "#FF8855";
+                } else if (ultimaMisura > 70 && ultimaMisura <= 80) {
+                    document.getElementById("immagine").innerHTML = '<img src="good3.png" height="400" width="400">';
+                    document.getElementById("condizione").innerHTML = '<p> Sta iniziando a fare caldo! </p>';
+                    document.getElementById("condizione").style.color = "#FF8855";
+                } else if (ultimaMisura > 80) {
+                    document.getElementById("immagine").innerHTML = '<img src="umido.jpg" height="400" width="400">';
+                    document.getElementById("condizione").innerHTML = '<p> Troppo Umido! </p>';
+                    document.getElementById("condizione").style.color = "#FF7070";
+                } else if (ultimaMisura < 40) {
+                    document.getElementById("immagine").innerHTML = '<img src="secco.jpg" height="400" width="400">';
+                    document.getElementById("condizione").innerHTML = '<p> Troppo Secco! </p>';
+                    document.getElementById("condizione").style.color = "#5289D6";
+                }
+                document.getElementById("ultimaUmidita").innerHTML = "<p> L'ultimo valore di umidit&#224; misurato &#232; pari al " + ultimaMisura + " %.</p>";
+            }
+        </script>
+    </head>
+    <body onload="avviaAggiornamento()">
+        <h2 style="display:flex;justify-content: center;padding-top:20px">
+            ITT G. Fauser - OpenDay 16 novembre 2019
+        </h2>
+        <h5 style="display:flex;justify-content: center;">
+            Progetto in Arduino: Misurazioni dei parametri ambientali
+        </h5>
+        <h2 style="display:flex;justify-content: center;">Laboratorio LI</h2>
+        <h4 style="display:flex;justify-content: center;" id="sottotitolo">
+            Lettura dati in corso... Attendi...
+        </h4>
+        <div class="container">
+            <h1 id="condizione" class="row align-items-center justify-content-center"></h1>
+            <h5 id="ultimaUmidita" class="row align-items-center justify-content-center"></h5>
+            <div id="immagine" class="row align-items-center justify-content-center"></div>
+            <div id="tabella" class="row align-items-center justify-content-center"></div>
+        </div>
+    </body>
+</html>
